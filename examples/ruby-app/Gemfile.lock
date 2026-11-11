@@ -4,7 +4,7 @@ GEM
     diff-lcs (1.6.2)
     mustermann (1.1.2)
       ruby2_keywords (~> 0.0.1)
-    rack (2.2.3)
+    rack (2.2.25)
     rack-protection (2.1.0)
       rack
     rake (12.3.2)
