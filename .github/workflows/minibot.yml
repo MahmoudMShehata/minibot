@@ -1,0 +1,37 @@
+# Runs minibot on a schedule, the way GitHub runs Dependabot jobs.
+# Requires: Settings > Actions > General > Workflow permissions >
+#   "Allow GitHub Actions to create and approve pull requests".
+name: minibot
+on:
+  schedule:
+    - cron: "0 6 * * 1" # Mondays 06:00 UTC
+  workflow_dispatch:
+    inputs:
+      security_only:
+        description: "Only update vulnerable dependencies"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write       # push update branches
+  pull-requests: write  # open / close PRs
+
+concurrency: minibot    # never run two jobs at once against the same repo
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.3"
+          bundler-cache: true
+      - name: Run minibot
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: >
+          bundle exec bin/minibot
+          --repo "${{ github.repository }}"
+          --local .
+          ${{ inputs.security_only && '--security-only' || '' }}

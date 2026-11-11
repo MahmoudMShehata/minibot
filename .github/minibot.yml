@@ -1,0 +1,10 @@
+# Same shape as .github/dependabot.yml
+version: 1
+updates:
+  - package-ecosystem: bundler
+    directory: /examples/ruby-app
+    open-pull-requests-limit: 5
+    ignore:
+      # Example: never jump rspec to a new major.
+      - dependency-name: rspec
+        versions: [">= 4"]

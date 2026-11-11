@@ -1,0 +1,42 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require "optparse"
+require_relative "../lib/minibot"
+
+options = { config: ".github/minibot.yml", dry_run: false, security_only: false }
+
+OptionParser.new do |o|
+  o.banner = "Usage: bin/minibot --repo OWNER/NAME [options]"
+  o.on("--repo REPO", "GitHub repository (owner/name)") { options[:repo] = _1 }
+  o.on("--local PATH", "Read files from a local checkout instead of the GitHub API") { options[:local] = _1 }
+  o.on("--config PATH", "Config file (default .github/minibot.yml, relative to --local if given)") do
+    options[:config] = _1
+  end
+  o.on("--dry-run", "Print the planned PRs and diffs; don't touch GitHub") { options[:dry_run] = true }
+  o.on("--security-only", "Only update vulnerable dependencies, to the lowest fixed version") do
+    options[:security_only] = true
+  end
+end.parse!
+
+abort "--repo is required" unless options[:repo]
+
+token = ENV["GITHUB_TOKEN"]
+abort "GITHUB_TOKEN is required unless --dry-run is used" if token.nil? && !options[:dry_run]
+
+client = token && Octokit::Client.new(access_token: token, auto_paginate: true)
+client ||= Octokit::Client.new unless options[:local] # public repos can be read anonymously
+
+config_path = options[:local] ? File.join(options[:local], options[:config]) : options[:config]
+config =
+  if File.exist?(config_path)
+    Minibot::Config.load(config_path)
+  else
+    blob = client.contents(options[:repo], path: options[:config])
+    Minibot::Config.parse(Base64.decode64(blob.content))
+  end
+
+Minibot::Runner.new(
+  repo: options[:repo], config: config, client: client, local_path: options[:local],
+  dry_run: options[:dry_run], security_only: options[:security_only]
+).run
