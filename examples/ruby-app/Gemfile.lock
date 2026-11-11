@@ -2,10 +2,10 @@ GEM
   remote: https://rubygems.org/
   specs:
     diff-lcs (1.6.2)
-    mustermann (1.1.2)
+    mustermann (2.0.2)
       ruby2_keywords (~> 0.0.1)
-    rack (2.2.3)
-    rack-protection (2.1.0)
+    rack (2.2.25)
+    rack-protection (2.2.4)
       rack
     rake (12.3.2)
     rspec (3.10.0)
@@ -22,10 +22,10 @@ GEM
       rspec-support (~> 3.10.0)
     rspec-support (3.10.3)
     ruby2_keywords (0.0.5)
-    sinatra (2.1.0)
-      mustermann (~> 1.0)
+    sinatra (2.2.4)
+      mustermann (~> 2.0)
       rack (~> 2.2)
-      rack-protection (= 2.1.0)
+      rack-protection (= 2.2.4)
       tilt (~> 2.0)
     tilt (2.9.0)
 
