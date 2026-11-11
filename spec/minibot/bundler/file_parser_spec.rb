@@ -20,6 +20,15 @@ RSpec.describe Minibot::Bundler::FileParser do
     expect(dependencies.map(&:name)).not_to include("rack-protection", "tilt")
   end
 
+  it "merges a gem declared in several groups into one dependency" do
+    gemfile = File.read(File.expand_path("../../fixtures/bundler/Gemfile", __dir__)) +
+              %(group :ci do\n  gem "rspec", "~> 3.10"\nend\n)
+    rspec = described_class.new(dependency_files: bundler_files(gemfile: gemfile)).parse
+                           .select { _1.name == "rspec" }
+    expect(rspec.size).to eq(1)
+    expect(rspec.first.requirements.first[:groups]).to eq(%w[development test ci])
+  end
+
   it "skips git-sourced gems" do
     gemfile = File.read(File.expand_path("../../fixtures/bundler/Gemfile", __dir__)) +
               %(gem "private_gem", git: "https://example.com/private_gem.git"\n)

@@ -24,20 +24,22 @@ module Minibot
         locked_versions = ::Bundler::LockfileParser.new(@lockfile.content)
                                                    .specs.to_h { [_1.name, _1.version.to_s] }
 
-        declared_dependencies.filter_map do |dep|
-          next unless dep.source.nil? # skip git/path gems; they have no registry version
+        # A gem can be declared more than once (e.g. in two `group` blocks).
+        # Bundler merges those, so we report one dependency with all groups.
+        declared_dependencies.group_by(&:name).filter_map do |name, decls|
+          next unless decls.all? { _1.source.nil? } # skip git/path gems; no registry version
 
-          version = locked_versions[dep.name]
+          version = locked_versions[name]
           next unless version # e.g. platform-specific gem not resolved here
 
           Dependency.new(
-            name: dep.name,
+            name: name,
             version: version,
             package_manager: "bundler",
             requirements: [{
               file: @gemfile.name,
-              requirement: dep.requirement.to_s,
-              groups: dep.groups.map(&:to_s)
+              requirement: decls.first.requirement.to_s,
+              groups: decls.flat_map(&:groups).map(&:to_s).uniq
             }]
           )
         end

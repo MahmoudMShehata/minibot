@@ -1,6 +1,6 @@
 source "https://rubygems.org"
 
-ruby ">= 3.1"
+ruby ">= 3.0"
 
 gem "octokit", "~> 9.2"
 gem "faraday-retry", "~> 2.2"
